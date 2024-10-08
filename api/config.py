@@ -37,10 +37,6 @@ USER_DOCUMENT = "D:/Rearrange_project_29_9_2024/app/data/data_user"
 CHUNK_SIZE = 1000
 CHUNK_OVERLAP = 200
 
-# History chat secsion
-URL = "https://quality-sunbeam-22641.upstash.io"
-TOKEN = "AVhxAAIjcDE4MmNkZjZmZDM3M2E0NDgwOTNlMDk1ZmEwYTJkYjE3N3AxMA"
-
 # Postgresql for memory storing
 DATABASE = 'rag'
 HOST = 'localhost'
