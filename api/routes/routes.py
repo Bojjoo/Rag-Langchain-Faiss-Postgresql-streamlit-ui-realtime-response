@@ -1,23 +1,4 @@
-from api.services.chatbot import ChatBot
-from api.services.vectorstore_faiss import VectorStore
-from fastapi import UploadFile, File, Form, APIRouter
-from pydantic import BaseModel
-from fastapi.responses import StreamingResponse
-
-bot = ChatBot()
-router = APIRouter()
-retriever_cache = {}
-vectorstore_cache = {}
-
-
-class QuestionRequest(BaseModel):
-    question: str
-    conversation_id: str
-    user_id: str
-
-
-class UserID(BaseModel):
-    user_id: str
+from api.routes import *
 
 
 @router.get("/")
@@ -55,15 +36,12 @@ async def upload_file(file: UploadFile = File(...), user_id: str = Form(...)):
     return chunks
 
 
-########################################################################
 @router.post('/get_answer/')
 async def get_response(question_request: QuestionRequest):
     system_retriever = VectorStore(question_request.user_id).system_retriever
     prompt = bot.question_handler(system_retriever, question_request)
     generator = bot.send_message(prompt)
     return StreamingResponse(generator, media_type="text/event-stream")
-
-#######################################################################
 
 
 @router.post('/get_answer_about_users_data/')

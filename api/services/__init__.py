@@ -33,5 +33,4 @@ class QuestionRequest(BaseModel):
     conversation_id: str
 
 
-#__all__ = [model_embedding]
 
