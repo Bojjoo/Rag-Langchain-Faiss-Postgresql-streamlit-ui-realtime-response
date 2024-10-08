@@ -2,11 +2,11 @@ import os
 import requests
 import streamlit as st
 import time
-import sys
+#import sys
 from api.database.database import SQLDatabase
 from api.services.vectorstore_faiss import VectorStore
 # Thêm thư mục mẹ vào sys.path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+#sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import module từ thư mục mẹ
 
@@ -48,7 +48,6 @@ def get_retriever(user_id: str):
     try:
         # Gửi yêu cầu POST đến endpoint FastAPI
         response = requests.post(url=USER_RETRIEVER, json=data)
-        # Kiểm tra xem yêu cầu có thành công hay không
         if response.status_code == 200:
             # Trả về nội dung phản hồi
             return response.json()
@@ -56,7 +55,6 @@ def get_retriever(user_id: str):
             # Nếu có lỗi, trả về thông báo lỗi
             return f"Error {response.status_code}: {response.text}"
     except Exception as e:
-        # Bắt lỗi trong quá trình gọi API
         return f"Error: {str(e)}"
 
 
@@ -99,19 +97,18 @@ if st.session_state["authenticated"]:
 
     # Thêm menu chọn Conversation vào sidebar dưới dạng danh sách các nút
     with st.sidebar:
-        st.info("Nice to meet you.")
-################################################################
+        st.info("Nice to meet you.", icon=":material/sentiment_satisfied:")
         # Nút upload data:
         # Thêm nút upload file vào sidebar
-        st.sidebar.markdown(":green-background[**UpLoad Your Documents: **]")
+        st.sidebar.header(":green-background[**UpLoad Your Documents:**]")
         uploaded_file = st.sidebar.file_uploader("Choose a PDF file", type=["pdf"])
 
         # Kiểm tra nếu người dùng chọn file
         if uploaded_file is not None:
             # Xác định URL của endpoint FastAPI và user_id
-            api_endpoint = "http://127.0.0.1:8000/upload_data"
+            upload_file_endpoint = "http://127.0.0.1:8000/upload_data"
 
-            if st.sidebar.button("Upload File"):
+            if st.sidebar.button(label="Upload File", icon=":material/upload_file:"):
                 # Gửi POST request với file trực tiếp từ Streamlit lên FastAPI
                 with st.spinner("Uploading..."):
                     try:
@@ -120,19 +117,41 @@ if st.session_state["authenticated"]:
                         data = {"user_id": st.session_state["user_id"]}
 
                         # Gửi request lên FastAPI
-                        response = requests.post(api_endpoint, files=files, data=data)
+                        response = requests.post(upload_file_endpoint, files=files, data=data)
 
                         # Hiển thị phản hồi
                         if response.status_code == 200:
-                            st.success(f"Successfully uploaded {uploaded_file.name}.")
-                            st.json(response.json())  # Hiển thị JSON trả về từ API
+                            st.success(response.json())
                         else:
                             st.error(f"Failed to upload file. Error {response.status_code}: {response.text}")
                     except Exception as e:
                         st.error(f"An error occurred: {str(e)}")
-################################################################
+
+        # Hiển thị danh sách các file đã upload
+        st.header("Uploaded Documents:")
+        files = sql_conn.get_files(user_id)
+
+        if files:
+            i = 0
+            for file_name, size in files:
+                col1, col2 = st.columns([2, 1])
+                with col1:
+                    st.write(f"📄 {file_name} ({size:.2f} MB)")
+                with col2:
+                    delete_file_endpoint = "http://127.0.0.1:8000/delete_file/"
+                    if st.button(label="", icon=":material/delete:", key=i+1, use_container_width=True):
+                        data = {"file_name": file_name, "user_id": user_id}
+                        response = requests.delete(delete_file_endpoint, json=data)
+                        st.success(f"{file_name} deleted successfully!")
+                        st.rerun()
+                i = i + 1
+
+            st.markdown("---")
+        else:
+            st.write("No files uploaded yet.")
+
         # Thêm tùy chọn để tạo cuộc hội thoại mới
-        st.markdown(":green-background[**Create New Conversation:**]")
+        st.header(":green-background[**Create New Conversation:**]")
         if st.button("Create New Conversation"):
             st.session_state["create_new_conversation"] = True
 
@@ -158,21 +177,21 @@ if st.session_state["authenticated"]:
                     st.warning("Conversation name cannot be empty.")
                 st.rerun()
 
-        st.header("All Conversations:", divider='orange')
+        st.header(":green-background[**All Conversations:**]", divider='orange')
 
         # Nhóm "System chat"
-        st.markdown(":green-background[**Conversation with system:**]")
+        st.subheader(":green-background[**Conversation with system:**]")
         if conversations_system:
             # Duyệt qua toàn bộ danh sách hội thoại với System và hiển thị dưới dạng nút
             for conv in conversations_system:
-                if st.button(f"{conv[1]}", key=f"system_{conv[0]}", use_container_width= True):
+                if st.button(f"{conv[1]}", icon=":material/chat:", key=f"system_{conv[0]}", use_container_width= True):
                     st.session_state["selected_conversation_id"] = conv[0]
                     # st.experimental_rerun()  # Làm mới giao diện khi chọn một conversation
         else:
             st.warning("No system conversation sessions available.")
 
         # Nhóm "User's data chat"
-        st.markdown(":green-background[**Conversation with your documents:**]")
+        st.subheader(":green-background[**Conversation with your documents:**]")
         if conversations_user:
             # Lấy db Faiss của user
             user_retriever = get_retriever(st.session_state["user_id"])
@@ -181,7 +200,7 @@ if st.session_state["authenticated"]:
 
             # Duyệt qua toàn bộ danh sách hội thoại với User Data và hiển thị dưới dạng nút
             for conv in conversations_user:
-                if st.button(f"{conv[1]}", key=f"user_{conv[0]}", use_container_width=True):
+                if st.button(f"{conv[1]}", icon=":material/chat:", key=f"user_{conv[0]}", use_container_width=True):
                     st.session_state["selected_conversation_id"] = conv[0]
                     # st.experimental_rerun()  # Làm mới giao diện khi chọn một conversation
         else:

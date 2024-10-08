@@ -18,3 +18,8 @@ class QuestionRequest(BaseModel):
 
 class UserID(BaseModel):
     user_id: str
+
+
+class FileDelete(BaseModel):
+    file_name: str
+    user_id: str

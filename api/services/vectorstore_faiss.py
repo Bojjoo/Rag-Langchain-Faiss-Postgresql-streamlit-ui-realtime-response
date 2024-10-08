@@ -93,12 +93,12 @@ class VectorStore:
                     new_db_for_user.save_local(f'{USER_DATABASE}/{user_id}')
                     #return new_db_for_user
 
-                return {f"Successfully uploaded {file.filename}, num_splits: {len(chunks)}"}
+                return f"Successfully uploaded {file.filename}, num_splits: {len(chunks)}"
             else:
-                return {"Failed to upload document, the total size limit is 50Mb and the file size limit is 20Mb. "
-                        "You can delete existed document to upload an other one!"}
+                return """Failed to upload document, the total size limit is 50Mb and the file size limit is 20Mb.
+                        You can delete existed document to upload an other one!"""
         else:
-            return {"Only pdf files are supported"}
+            return "Only pdf files are supported"
 
     # For system
     def create_db_from_files(self):

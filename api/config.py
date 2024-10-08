@@ -11,6 +11,7 @@ PROMPT_TEMPLATE = """
         3. **If no relevant data is available:**
         - Apologize politely and explain that you do not have enough information to answer the question at this time.
         You can ONLY uses information contained in the context below and does not hallucinate.
+        4. **If you need to display math symbols and expressions, put them in double dollar signs "$$" (example: $$ x - 1 $$)**
         """
 
 REGENERATE_QUESTION_PROMPT = """Please rewrite the user's input based on the conversation history, maintaining the original question format and context. 

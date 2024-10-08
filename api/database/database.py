@@ -78,6 +78,12 @@ class SQLDatabase:
         elif total_size > 50 or file_size > 20:
             return 0
 
+    # Lấy ra các file của user_id
+    def get_files(self, user_id):
+        self.cur.execute(f"select file_name, size from files where user_id='{user_id}'")
+        files = self.cur.fetchall()
+        return files
+
     # Xóa thông tin file của user khỏi files
     def delete_file(self, file_name, user_id):
         self.cur.execute(f"select file_id from files where file_name='{file_name}' and user_id='{user_id}'")

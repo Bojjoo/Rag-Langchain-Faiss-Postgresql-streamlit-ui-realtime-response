@@ -56,12 +56,14 @@ async def get_response(question_request: QuestionRequest):
 
 
 @router.delete("/delete_file/")
-def delete_file(file_name: str, user_id: str):
+def delete_file(file: FileDelete):
+    user_id = file.user_id
+    file_name = file.file_name
     vectorstore = VectorStore(user_id)
     try:
         vectorstore.delete_from_vectorstore(file_name, user_id)
-        return {"Deleted file!"}
+        return 1
     except:
-        return {f"The file {file_name} is not existed!"}
+        return 0
     
 
